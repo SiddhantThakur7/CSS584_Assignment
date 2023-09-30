@@ -16,28 +16,20 @@ for i in range(4):
 image_gallery_layout.append([psg.Frame('', [pagination_element], expand_x=True, element_justification='center',border_width=0)])
 image_gallery_layout = [psg.Frame('', image_gallery_layout, expand_x=True, expand_y=True, pad=(16))]
 
-operation_selection_layout = psg.Frame('', [[psg.Combo(['Intensity', 'Color', 'Energy']), psg.Button('Retrieve Images')], [psg.Button('Retrieve Images')]], expand_x=True, border_width=0)
-selected_image_layout = psg.Frame('', [[psg.Button("Selected Image", size=(32, 16))]], border_width=0)
-image_operation_layout = [psg.Frame('', [[selected_image_layout, operation_selection_layout]], expand_x=True, border_width=0)]
-
-imo_v = psg.Column([[psg.Button("Selected Image", size=(32, 16))], [psg.Combo(['Intensity', 'Color', 'Energy'], expand_x=True)], [psg.Button('Retrieve Images', expand_x=True)], [psg.Button('Retrieve Images', expand_x=True)]], size=(296, 1200), element_justification='center', vertical_alignment='center', pad=(16, 96))
-img_v = psg.Column([image_gallery_layout], expand_y=True, expand_x=True)
+image_operations_layout = [[psg.Button("Selected Image", size=(32, 16))], [psg.Combo(['Intensity', 'Color', 'Energy'], expand_x=True)], [psg.Button('Retrieve Images', expand_x=True)], [psg.Button('Retrieve Images', expand_x=True)]]
 
 def createWindow(imageSelected=False):
-    defaultLayout = [
+    print(default_text_element, image_gallery_layout)
+    layout = [
         default_text_element,
         image_gallery_layout
+    ] if not imageSelected else [
+        [psg.Column(image_operations_layout, size=(296, 1200), element_justification='center', pad=(16, 96)), psg.Column([image_gallery_layout], expand_y=True, expand_x=True)]
     ]
-
-    operational_layout = [
-        [imo_v, img_v]
-    ]
-
-    layout = operational_layout
 
     return psg.Window("Image Retrieval System", layout, size=(1280, 786), margins=(16, 16))
 
-window = createWindow()
+window = createWindow(False)
 
 # Event Loop
 while True:
