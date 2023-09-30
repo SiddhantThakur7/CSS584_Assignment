@@ -33,7 +33,7 @@ def createWindow(imageSelected=False):
         [imo_v, img_v]
     ]
 
-    layout = defaultLayout
+    layout = operational_layout
 
     return psg.Window("Image Retrieval System", layout, size=(1280, 786), margins=(16, 16))
 
