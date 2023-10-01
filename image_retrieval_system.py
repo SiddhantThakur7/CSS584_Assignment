@@ -115,8 +115,6 @@ while True:
         window2 = window
         window = createWindow(event_parameters[1][:-1])
         window2.close()
-    if event == "-B2-":
-        print("Test Button Pressed!")
 
     if event == "-RESET-":
         window2 = window
