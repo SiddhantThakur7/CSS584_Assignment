@@ -79,6 +79,7 @@ def createWindow(image_selected):
             [
                 psg.Combo(
                     ["Intensity", "Color", "Energy"],
+                    default_value="Intensity",
                     expand_x=True,
                     enable_events=True,
                     readonly=True,
@@ -86,7 +87,7 @@ def createWindow(image_selected):
                 )
             ],
             [psg.Button("Retrieve Images", expand_x=True)],
-            [psg.Button("Reset", key="-RESET-", expand_x=True)],
+            [psg.Button("Reset", key="-RESET-", expand_x=True, pad=((0, 0), (32, 0)))],
         ]
         layout = [
             [
@@ -120,13 +121,11 @@ while True:
         break
 
     if "-IMAGE" in event.split("_"):
-        window2 = window
-        window = createWindow(event_parameters[1][:-1])
+        window, window2 = createWindow(event_parameters[1][:-1]), window
         window2.close()
 
     if event == "-RESET-":
-        window2 = window
-        window = createWindow(None)
+        window, window2 = createWindow(None), window
         window2.close()
 
 window.close()
