@@ -1,4 +1,3 @@
-import os
 import PySimpleGUI as psg
 
 psg.theme("LightGrey1")
@@ -42,9 +41,7 @@ class Layout:
             for _ in range(cols):
                 temp.append(
                     psg.Image(
-                        "{path}\\images\\png\\{id}.png".format(
-                            path=os.getcwd(), id=cur
-                        ),
+                        ".\\images\\png\\{id}.png".format(id=cur),
                         pad=16,
                         size=size,
                         key="-IMAGE_{id}-".format(id=cur),
@@ -94,9 +91,7 @@ class Layout:
             image_operations_layout = [
                 [
                     psg.Image(
-                        "{path}\\images\\png\\{id}.png".format(
-                            path=os.getcwd(), id=self.image_selected
-                        ),
+                        ".\\images\\png\\{id}.png".format(id=self.image_selected),
                         size=(320, 320),
                     )
                 ],
@@ -130,7 +125,11 @@ class Layout:
                                         pad=(16, 96),
                                     ),
                                     psg.Column(
-                                        [self.generate_image_gallery((128, 128), 20, 5)],
+                                        [
+                                            self.generate_image_gallery(
+                                                (128, 128), 20, 5
+                                            )
+                                        ],
                                         expand_y=True,
                                         expand_x=True,
                                     ),
@@ -170,7 +169,7 @@ while True:
     if window2:
         window2.close()
         window2 = None
-        
+
     if "-IMAGE" in event.split("_"):
         current_layout.curr_page = 1
         current_layout.image_selected = event_parameters[1][:-1]
