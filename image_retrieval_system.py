@@ -55,7 +55,7 @@ def generate_image_gallery(size=(160, 160), page_length=18, cols=6):
     return image_gallery_layout
 
 
-def createWindow(image_selected):
+def createWindow(image_selected=1):
     layout = None
     default_text_element = [
         psg.Text(
@@ -66,59 +66,73 @@ def createWindow(image_selected):
             pad=(16, 8),
         ),
     ]
-    if image_selected:
-        image_operations_layout = [
-            [
-                psg.Image(
-                    "{path}\\images\\png\\{id}.png".format(
-                        path=os.getcwd(), id=image_selected
-                    ),
-                    size=(320, 320),
-                )
-            ],
-            [psg.Combo(["Intensity", "Color", "Energy"], expand_x=True)],
-            [psg.Button("Retrieve Images", expand_x=True)],
-            [psg.Button("Reset", key="-RESET-", expand_x=True)],
-        ]
-        layout = [
-            [
-                psg.Column(
-                    image_operations_layout,
-                    size=(296, 1200),
-                    element_justification="center",
-                    pad=(16, 96),
+    image_operations_layout = [
+        [
+            psg.Image(
+                "{path}\\images\\png\\{id}.png".format(
+                    path=os.getcwd(), id=image_selected
                 ),
-                psg.Column(
-                    [generate_image_gallery((128, 128), 20, 5)],
-                    expand_y=True,
-                    expand_x=True,
-                ),
-            ]
-        ]
-    else:
-        layout = [default_text_element, generate_image_gallery()]
+                size=(320, 320),
+            )
+        ],
+        [psg.Combo(["Intensity", "Color", "Energy"], expand_x=True)],
+        [psg.Button("Retrieve Images", expand_x=True)],
+        [psg.Button("Reset", key="-RESET-", expand_x=True)],
+    ]
+
+    layout = [
+        [
+            psg.Column(
+                [default_text_element, generate_image_gallery()],
+                key="-DEFAULT-",
+            )
+        ],
+        [
+            psg.Column(
+                [
+                    [
+                        psg.Column(
+                            image_operations_layout,
+                            size=(296, 1200),
+                            element_justification="center",
+                            pad=(16, 96),
+                        ),
+                        psg.Column(
+                            [generate_image_gallery((128, 128), 20, 5)],
+                            expand_y=True,
+                            expand_x=True,
+                        ),
+                    ]
+                ],
+                key="-OPERATIONAL-",
+                visible=False,
+            )
+        ],
+    ]
+
+    print(layout)
     return psg.Window(
         "Image Retrieval System", layout, size=(1280, 786), margins=(16, 16)
     )
 
 
-window = createWindow(None)
+window = createWindow()
 
 # Event Loop
 while True:
     event, values = window.read()
-    event_parameters = event.split("_") if event else None
+    # event_parameters = event.split("_") if event else None
     if event == psg.WIN_CLOSED:
         break
 
     if "-IMAGE" in event.split("_"):
-        window2 = window
-        window = createWindow(event_parameters[1][:-1])
-        window2.close()
+        print( window["-DEFAULT-"].visible,  window["-OPERATIONAL-"].visible, window["-OPERATIONAL-"])
+        window["-OPERATIONAL-"].update(visible=True)
+        window["-DEFAULT-"].update(visible=False)
+        print( window["-DEFAULT-"].visible,  window["-OPERATIONAL-"].visible, window["-OPERATIONAL-"])
 
     if event == "-RESET-":
-        window2 = window
-        window = createWindow(None)
-        window2.close()
+        window["-OPERATIONAL-"].update(visible=False)
+        window["-DEFAULT-"].update(visible=True)
 
 window.close()
