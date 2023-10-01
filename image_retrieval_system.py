@@ -76,7 +76,15 @@ def createWindow(image_selected):
                     size=(320, 320),
                 )
             ],
-            [psg.Combo(["Intensity", "Color", "Energy"], expand_x=True)],
+            [
+                psg.Combo(
+                    ["Intensity", "Color", "Energy"],
+                    expand_x=True,
+                    enable_events=True,
+                    readonly=True,
+                    key="-METHOD-",
+                )
+            ],
             [psg.Button("Retrieve Images", expand_x=True)],
             [psg.Button("Reset", key="-RESET-", expand_x=True)],
         ]
