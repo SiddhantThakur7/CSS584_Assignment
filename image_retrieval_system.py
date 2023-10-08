@@ -33,7 +33,7 @@ while True:
         window, window_prev = current_layout.createWindow(image_order), window
 
     if event == '-RETRIEVE-':
-        window, window_prev = current_layout.createWindow(image_processor.randomize_order()), window
+        window, window_prev = current_layout.createWindow(image_processor.process_image_distances(int(current_layout.image_selected))), window
         current_layout.similarity_method = values['-METHOD-'] 
 
     if event == "-NEXT_PAGE-":
