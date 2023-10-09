@@ -3,8 +3,8 @@ from Layout import Layout
 from ImageProcessor import ImageProcessor
 
 psg.theme("LightGrey1")
-psg.set_options(font='Arial 14')
-if __name__ == '__main__':
+psg.set_options(font="Arial 14")
+if __name__ == "__main__":
     image_processor = ImageProcessor()
     current_layout = Layout(len(image_processor.images))
     image_order = list(image_processor.images.values())
@@ -32,9 +32,17 @@ if __name__ == '__main__':
             current_layout.image_selected = None
             window, window_prev = current_layout.createWindow(image_order), window
 
-        if event == '-RETRIEVE-':
-            current_layout.similarity_method = values['-METHOD-']
-            window, window_prev = current_layout.createWindow(image_processor.retrieve_similar_images(int(current_layout.image_selected), current_layout.similarity_method)), window
+        if event == "-RETRIEVE-":
+            current_layout.similarity_method = values["-METHOD-"]
+            window, window_prev = (
+                current_layout.createWindow(
+                    image_processor.retrieve_similar_images(
+                        int(current_layout.image_selected),
+                        current_layout.similarity_method,
+                    )
+                ),
+                window,
+            )
 
         if event == "-NEXT_PAGE-":
             current_layout.curr_page += 1

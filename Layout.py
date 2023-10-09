@@ -1,7 +1,8 @@
 import PySimpleGUI as psg
 
 pagination_font = "Arial 16 bold"
-DEFAULT_SIMILARITY_METHOD = 'Intensity'
+DEFAULT_SIMILARITY_METHOD = "Intensity"
+
 
 class Layout:
     def __init__(self, MAX) -> None:
@@ -10,7 +11,9 @@ class Layout:
         self.MAX = MAX
         self.similarity_method = DEFAULT_SIMILARITY_METHOD
 
-    def generate_image_gallery(self, image_list, size=(160, 160), page_length=18, cols=6):
+    def generate_image_gallery(
+        self, image_list, size=(152, 152), page_length=18, cols=6
+    ):
         start = (self.curr_page - 1) * page_length
         if start >= self.MAX:
             self.curr_page -= 1
@@ -39,12 +42,25 @@ class Layout:
             temp = []
             for _ in range(cols):
                 temp.append(
-                    psg.Image(
-                        "{path}".format(path=image_list[cur]['path']),
-                        pad=16,
-                        size=size,
-                        key="-IMAGE_{id}-".format(id=cur+1),
-                        enable_events=True,
+                    psg.Column(
+                        [
+                            [
+                                psg.Image(
+                                    "{path}".format(path=image_list[cur]["path"]),
+                                    pad=(16, 4 / 2),
+                                    size=size,
+                                    key="-IMAGE_{id}-".format(id=cur + 1),
+                                    enable_events=True,
+                                )
+                            ],
+                            [
+                                psg.Text(
+                                    "{name}".format(name=image_list[cur]["name"]),
+                                    expand_x=True,
+                                    justification="center",
+                                )
+                            ],
+                        ]
                     )
                 )
                 cur += 1
@@ -88,13 +104,22 @@ class Layout:
                 [
                     psg.Image(
                         ".\\images\\png\\{id}.png".format(id=self.image_selected),
-                        size=(320, 320),
+                        size=(300, 240),
+                        pad=(0, 36/4),
+                    )
+                ],
+                [
+                    psg.Text(
+                        "{id}".format(id=self.image_selected),
+                        expand_x=True,
+                        justification="center",
                     )
                 ],
                 [
                     psg.Combo(
                         ["Intensity", "Color", "Energy"],
                         default_value=self.similarity_method,
+                        pad=(8, 36),
                         expand_x=True,
                         enable_events=True,
                         readonly=True,
@@ -142,7 +167,7 @@ class Layout:
                                         "Similar Images",
                                         [
                                             self.generate_image_gallery(
-                                                image_list, (128, 128), 20, 5
+                                                image_list, (120, 120), 20, 5
                                             )
                                         ],
                                         expand_y=True,
