@@ -152,6 +152,7 @@ class Layout:
                     )
                 ],
             ]
+            frame_label = 'Other' if len(self.images) == 100 else 'Similar'
             layout = [
                 [
                     [
@@ -165,7 +166,7 @@ class Layout:
                                         pad=(16, 16),
                                     ),
                                     psg.Frame(
-                                        "Similar Images",
+                                        f"{frame_label} Images",
                                         [
                                             self.generate_image_gallery(
                                                 (120, 120), 20, 5
