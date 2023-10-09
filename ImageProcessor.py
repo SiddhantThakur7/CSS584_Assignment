@@ -1,5 +1,9 @@
 import cv2
 import numpy as np
+import multiprocessing as mp
+import time
+
+N = mp.cpu_count()
 
 def binary_of(x, bits = 8):
     return format(x, f'0{bits}b')
@@ -7,28 +11,43 @@ def binary_of(x, bits = 8):
 def int_of(x):
     return int(x, 2)
 
+
+COLOR_CODE = 'color_code'
+INTENSITY = 'intensity'
+
 class ImageProcessor:
     def __init__(self) -> None:
-        self.images = dict()
+        self.images = {}
+        self.methods = {'Color': COLOR_CODE, 'Intensity': INTENSITY}
         self.INTENSITY_COEFFICIENT_MATRIX = np.array([[0.114], [0.587], [0.299]])
-        for i in range(1, 101):
-            filepath = f".\\images\\png\\{i}.png"
-            image = cv2.imread(filepath, cv2.IMREAD_COLOR)
-            resolution_x = len(image)
-            resolution_y = len(image[0])
-            self.images[i] = {
-                "representation": image,
-                'resolution_x':resolution_x,
-                'resolution_y': resolution_y,
-                'resolution': resolution_x * resolution_y,
-                "color_code_representation": self.get_color_code_representaion(image, resolution_x, resolution_y),
-                "intensity_representation": np.transpose(np.dot(image, self.INTENSITY_COEFFICIENT_MATRIX))[0],
-                "path": filepath,
-            }
-        
+        with mp.Pool(processes = N) as p:
+            results = p.map(self.intialize_image_data, [x for x in range(1, 101)])
+            p.close()
+            p.join()
+
+        for (idx, val) in enumerate(results):
+            self.images[idx+1] = val[idx + 1] 
+            
         self.process_histograms('intensity')
         self.process_histograms('color_code')
-
+    
+    def intialize_image_data(self, i):
+        image_info = {}
+        filepath = f".\\images\\png\\{i}.png"
+        image = cv2.imread(filepath, cv2.IMREAD_COLOR)
+        resolution_x = len(image)
+        resolution_y = len(image[0])
+        image_info[i] = {
+            "representation": image,
+            'resolution_x':resolution_x,
+            'resolution_y': resolution_y,
+            'resolution': resolution_x * resolution_y,
+            "color_code_representation": self.get_color_code_representaion(image, resolution_x, resolution_y),
+            "intensity_representation": np.transpose(np.dot(image, self.INTENSITY_COEFFICIENT_MATRIX))[0],
+            "path": filepath,
+        }
+        return image_info
+        
     def get_color_code_representaion(self, image, m, n):
         color_code_array = [[0 for _ in range(n)] for _ in range(m)]
         for i in range(m):
@@ -48,7 +67,7 @@ class ImageProcessor:
                     x = 24
                 hist[x] += 1
         return np.array(hist)
-
+    
     def process_histograms(self, type = 'intensity'):
         for image in self.images:
             self.images[image][f'{type}_histogram'] = self.calculate_histogram(self.images[image][f'{type}_representation'], type)
@@ -68,13 +87,10 @@ class ImageProcessor:
                     'distance': self.caclulate_distance(self.images[chosen_image], self.images[image], type)
                 }
                 image_distances.append(distance_info)
-        image_distances.sort(key = lambda x: x['distance'])
-        
-        # for i in image_distances[:21]:
-        #     print(i['name'])
         return image_distances
-
-
-
-# X = ImageProcessor()
-# X.process_image_distances(1, type='color_code')
+    
+    def retrieve_similar_images(self, chosen_image, method_label):
+        method = self.methods[method_label]
+        distances = self.process_image_distances(chosen_image, method)
+        distances.sort(key = lambda x: x['distance'])
+        return distances
