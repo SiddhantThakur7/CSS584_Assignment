@@ -1,14 +1,14 @@
 import PySimpleGUI as psg
 
 pagination_font = "Arial 16 bold"
-
+DEFAULT_SIMILARITY_METHOD = 'Intensity'
 
 class Layout:
     def __init__(self, MAX) -> None:
         self.curr_page = 1
         self.image_selected = None
         self.MAX = MAX
-        self.similarity_method = None
+        self.similarity_method = DEFAULT_SIMILARITY_METHOD
 
     def generate_image_gallery(self, image_list, size=(160, 160), page_length=18, cols=6):
         start = (self.curr_page - 1) * page_length
@@ -94,7 +94,7 @@ class Layout:
                 [
                     psg.Combo(
                         ["Intensity", "Color", "Energy"],
-                        default_value="Intensity",
+                        default_value=self.similarity_method,
                         expand_x=True,
                         enable_events=True,
                         readonly=True,
