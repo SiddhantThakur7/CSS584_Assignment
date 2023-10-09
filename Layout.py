@@ -5,15 +5,15 @@ DEFAULT_SIMILARITY_METHOD = "Intensity"
 
 
 class Layout:
-    def __init__(self, MAX) -> None:
+    def __init__(self, images) -> None:
         self.curr_page = 1
-        self.image_selected = None
-        self.MAX = MAX
+        self.selected_image = None
         self.similarity_method = DEFAULT_SIMILARITY_METHOD
 
-    def generate_image_gallery(
-        self, image_list, size=(152, 152), page_length=18, cols=6
-    ):
+        self.MAX = len(images)
+        self.images = images
+
+    def generate_image_gallery(self, size=(152, 152), page_length=18, cols=6):
         start = (self.curr_page - 1) * page_length
         if start >= self.MAX:
             self.curr_page -= 1
@@ -37,8 +37,9 @@ class Layout:
             ),
         ]
 
+        cur_max = self.MAX if not self.selected_image else self.MAX - 1
         image_gallery_layout = []
-        while cur < min(start + page_length, self.MAX):
+        while cur < min(start + page_length, cur_max):
             temp = []
             for _ in range(cols):
                 temp.append(
@@ -46,7 +47,7 @@ class Layout:
                         [
                             [
                                 psg.Image(
-                                    "{path}".format(path=image_list[cur]["path"]),
+                                    "{path}".format(path=self.images[cur]["path"]),
                                     pad=(16, 4 / 2),
                                     size=size,
                                     key="-IMAGE_{id}-".format(id=cur + 1),
@@ -55,7 +56,7 @@ class Layout:
                             ],
                             [
                                 psg.Text(
-                                    "{name}".format(name=image_list[cur]["name"]),
+                                    "{name}".format(name=self.images[cur]["name"]),
                                     expand_x=True,
                                     justification="center",
                                 )
@@ -64,7 +65,7 @@ class Layout:
                     )
                 )
                 cur += 1
-                if cur >= self.MAX:
+                if (self.selected_image and cur == self.MAX - 1) or cur == self.MAX:
                     break
             image_gallery_layout.append(temp)
         image_gallery_layout.append(
@@ -88,7 +89,7 @@ class Layout:
         ]
         return image_gallery_layout
 
-    def createWindow(self, image_list):
+    def createWindow(self):
         layout = None
         default_text_element = [
             psg.Text(
@@ -99,18 +100,18 @@ class Layout:
                 pad=(16, 8),
             ),
         ]
-        if self.image_selected:
+        if self.selected_image:
             image_operations_layout = [
                 [
                     psg.Image(
-                        ".\\images\\png\\{id}.png".format(id=self.image_selected),
+                        ".\\images\\png\\{id}.png".format(id=self.selected_image),
                         size=(300, 240),
-                        pad=(0, 36/4),
+                        pad=(0, 36 / 4),
                     )
                 ],
                 [
                     psg.Text(
-                        "{id}".format(id=self.image_selected),
+                        "{id}".format(id=self.selected_image),
                         expand_x=True,
                         justification="center",
                     )
@@ -167,7 +168,7 @@ class Layout:
                                         "Similar Images",
                                         [
                                             self.generate_image_gallery(
-                                                image_list, (120, 120), 20, 5
+                                                (120, 120), 20, 5
                                             )
                                         ],
                                         expand_y=True,
@@ -184,7 +185,7 @@ class Layout:
             layout = [
                 [
                     psg.Column(
-                        [default_text_element, self.generate_image_gallery(image_list)],
+                        [default_text_element, self.generate_image_gallery()],
                         key="-PARENT-",
                     )
                 ]
@@ -193,5 +194,5 @@ class Layout:
             "Image Retrieval System", layout, size=(1280, 786), margins=(16, 16)
         )
 
-    image_selected = None
+    selected_image = None
     curr_page = 1

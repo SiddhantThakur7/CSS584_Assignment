@@ -1,7 +1,8 @@
 import cv2
 import numpy as np
 import multiprocessing as mp
-import time
+import json
+import os
 
 N = mp.cpu_count()
 
@@ -9,10 +10,8 @@ N = mp.cpu_count()
 def binary_of(x, bits=8):
     return format(x, f"0{bits}b")
 
-
 def int_of(x):
     return int(x, 2)
-
 
 COLOR_CODE = "color_code"
 INTENSITY = "intensity"
@@ -23,6 +22,11 @@ class ImageProcessor:
         self.images = {}
         self.methods = {"Color": COLOR_CODE, "Intensity": INTENSITY}
         self.INTENSITY_COEFFICIENT_MATRIX = np.array([[0.114], [0.587], [0.299]])
+        self.default_image_list = []
+        
+        self.initialize()
+
+    def initialize(self):
         with mp.Pool(processes=N) as p:
             results = p.map(self.intialize_image_data, [x for x in range(1, 101)])
             p.close()
@@ -30,7 +34,9 @@ class ImageProcessor:
 
         for idx, val in enumerate(results):
             self.images[idx + 1] = val[idx + 1]
-
+        
+        self.default_image_list = list(self.images.values())
+        
         self.process_histograms("intensity")
         self.process_histograms("color_code")
 
