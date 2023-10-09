@@ -36,7 +36,7 @@ if __name__ == "__main__":
         if event == "-RETRIEVE-":
             current_layout.similarity_method = values["-METHOD-"]
             current_layout.images = image_processor.retrieve_similar_images(
-                int(current_layout.selected_image),
+                current_layout.selected_image,
                 current_layout.similarity_method,
             )
             window, window_prev = current_layout.createWindow(), window

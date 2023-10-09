@@ -10,11 +10,14 @@ N = mp.cpu_count()
 def binary_of(x, bits=8):
     return format(x, f"0{bits}b")
 
+
 def int_of(x):
     return int(x, 2)
 
+
 COLOR_CODE = "color_code"
 INTENSITY = "intensity"
+CACHE_PATH = ".\\cache\\representations.json"
 
 
 class ImageProcessor:
@@ -23,20 +26,23 @@ class ImageProcessor:
         self.methods = {"Color": COLOR_CODE, "Intensity": INTENSITY}
         self.INTENSITY_COEFFICIENT_MATRIX = np.array([[0.114], [0.587], [0.299]])
         self.default_image_list = []
-        
+
         self.initialize()
 
     def initialize(self):
-        with mp.Pool(processes=N) as p:
-            results = p.map(self.intialize_image_data, [x for x in range(1, 101)])
+        cache_data = self.load_cache_data()
+        if cache_data:
+            self.images = cache_data
+        else:
+            with mp.Pool(processes=N) as p:
+                results = p.map(self.intialize_image_data, [x for x in range(1, 101)])
+            for idx, val in enumerate(results):
+                self.images[idx + 1] = val[idx + 1]
+            self.process_histograms("intensity")
+            self.process_histograms("color_code")
+            self.write_to_cache(self.images)
 
-        for idx, val in enumerate(results):
-            self.images[idx + 1] = val[idx + 1]
-        
         self.default_image_list = list(self.images.values())
-        
-        self.process_histograms("intensity")
-        self.process_histograms("color_code")
 
     def intialize_image_data(self, i):
         image_info = {}
@@ -59,6 +65,42 @@ class ImageProcessor:
             "path": filepath,
         }
         return image_info
+
+    def load_cache_data(self):
+        if not os.path.exists(CACHE_PATH):
+            return
+
+        cache_data = json.load(open(CACHE_PATH, "r"))
+        return self.deserialize_image_data(cache_data)
+
+    def write_to_cache(self, data):
+        json.dump(self.serialize_image_data(data), open(CACHE_PATH, "w+"))
+
+    def serialize_image_data(self, images):
+        data = {}
+        for image in images:
+            data[image] = {}
+            data[image]["name"] = images[image]["name"]
+            data[image]["resolution"] = images[image]["resolution"]
+            data[image]["path"] = images[image]["path"]
+            data[image]["intensity_histogram"] = images[image][
+                "intensity_histogram"
+            ].tolist()
+            data[image]["color_code_histogram"] = images[image][
+                "color_code_histogram"
+            ].tolist()
+        return data
+
+    def deserialize_image_data(self, images):
+        data = images
+        for image in images:
+            data[image]["intensity_histogram"] = np.array(
+                images[image]["intensity_histogram"]
+            )
+            data[image]["color_code_histogram"] = np.array(
+                images[image]["color_code_histogram"]
+            )
+        return data
 
     def get_color_code_representaion(self, image, m, n):
         color_code_array = [[0 for _ in range(n)] for _ in range(m)]
