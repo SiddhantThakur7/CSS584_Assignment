@@ -29,8 +29,6 @@ class ImageProcessor:
     def initialize(self):
         with mp.Pool(processes=N) as p:
             results = p.map(self.intialize_image_data, [x for x in range(1, 101)])
-            p.close()
-            p.join()
 
         for idx, val in enumerate(results):
             self.images[idx + 1] = val[idx + 1]
