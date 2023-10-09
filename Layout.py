@@ -13,7 +13,18 @@ class Layout:
         self.MAX = len(images)
         self.images = images
 
+
     def generate_image_gallery(self, size=(152, 152), page_length=18, cols=6):
+        """Generates and combines the individual components of the image gallery section
+
+        Args:
+            size (tuple, optional): The display size of the images inside the gallery. Defaults to (152, 152).
+            page_length (int, optional): Number of images persent on each page. Defaults to 18.
+            cols (int, optional): Number of columns that the image gallery should contain. Defaults to 6.
+
+        Returns:
+            _type_: None
+        """
         start = (self.curr_page - 1) * page_length
         if start >= self.MAX:
             self.curr_page -= 1
@@ -21,6 +32,8 @@ class Layout:
             self.curr_page += 1
 
         cur = start
+
+        # Pagination controls
         pagination_element = [
             psg.Button(
                 "<",
@@ -37,6 +50,7 @@ class Layout:
             ),
         ]
 
+        # Image gallery layout formation
         cur_max = self.MAX if not self.selected_image else self.MAX - 1
         image_gallery_layout = []
         while cur < min(start + page_length, cur_max):
@@ -77,6 +91,8 @@ class Layout:
                 )
             ]
         )
+
+        # Integrating all image gallery components
         image_gallery_layout = [
             psg.Column(
                 image_gallery_layout,
@@ -90,6 +106,11 @@ class Layout:
         return image_gallery_layout
 
     def createWindow(self):
+        """Determines the layout to be presented and integrates all components of the layout renders it in a window
+
+        Returns:
+            _type_: None
+        """
         layout = None
         default_text_element = [
             psg.Text(
@@ -100,6 +121,8 @@ class Layout:
                 pad=(16, 8),
             ),
         ]
+
+        #Layout formation when an image is selected
         if self.selected_image:
             image_operations_layout = [
                 [
@@ -152,6 +175,7 @@ class Layout:
                     )
                 ],
             ]
+
             frame_label = 'Other' if len(self.images) == 100 else 'Similar'
             layout = [
                 [
@@ -182,7 +206,9 @@ class Layout:
                     ]
                 ]
             ]
+        
         else:
+            #Layout formation when no image is selected
             layout = [
                 [
                     psg.Column(
@@ -191,9 +217,8 @@ class Layout:
                     )
                 ]
             ]
+
+        # Render the layout in a window
         return psg.Window(
             "Image Retrieval System", layout, size=(1280, 786), margins=(16, 16)
         )
-
-    selected_image = None
-    curr_page = 1
