@@ -6,12 +6,11 @@ DEFAULT_SIMILARITY_METHOD = "Intensity"
 
 class Layout:
     def __init__(self, images) -> None:
-        self.curr_page = 1
-        self.selected_image = None
-        self.similarity_method = DEFAULT_SIMILARITY_METHOD
-
+        self.curr_page = 1 # State variable for current page number
+        self.selected_image = None # State variable for currently selected image 
+        self.similarity_method = DEFAULT_SIMILARITY_METHOD # State variable for currently selected similarity method
+        self.images = images # State variables for current image order list
         self.MAX = len(images)
-        self.images = images
 
 
     def generate_image_gallery(self, size=(152, 152), page_length=18, cols=6):
@@ -33,7 +32,7 @@ class Layout:
 
         cur = start
 
-        # Pagination controls
+        # Pagination controls layout
         pagination_element = [
             psg.Button(
                 "<",
@@ -64,7 +63,7 @@ class Layout:
                                     "{path}".format(path=self.images[cur]["path"]),
                                     pad=(16, 4 / 2),
                                     size=size,
-                                    key="-IMAGE_{id}-".format(id=cur + 1),
+                                    key="-IMAGE_{id}-".format(id=self.images[cur]["name"]),
                                     enable_events=True,
                                 )
                             ],
@@ -105,7 +104,7 @@ class Layout:
         ]
         return image_gallery_layout
 
-    def createWindow(self):
+    def createWindow(self, result=False):
         """Determines the layout to be presented and integrates all components of the layout renders it in a window
 
         Returns:
@@ -176,7 +175,7 @@ class Layout:
                 ],
             ]
 
-            frame_label = 'Other' if len(self.images) == 100 else 'Similar'
+            frame_label = 'Other' if not result else 'Similar'
             layout = [
                 [
                     [
