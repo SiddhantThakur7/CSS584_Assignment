@@ -51,6 +51,7 @@ if __name__ == "__main__":
                 current_layout.selected_image,
                 current_layout.similarity_method,
             )
+            current_layout.curr_page = 1
             window, window_prev = current_layout.createWindow(result=True), window
             
         # Navigate to the next page event.
