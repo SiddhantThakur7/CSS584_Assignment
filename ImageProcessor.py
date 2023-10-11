@@ -59,9 +59,12 @@ class ImageProcessor:
             self.images = cache_data
         else:
             # Process pool spanning across all the available CPU cores 
-            with mp.Pool(processes=N) as p:
+            # with mp.Pool(processes=N) as p:
                 # Aggregate mutlti-processing results
-                results = p.map(self.intialize_image_data, [x for x in range(1, 101)])
+                # results = p.map(self.intialize_image_data, [x for x in range(1, 101)])
+            results = []
+            for i in range(1, 101):
+                results.append(self.intialize_image_data(i))
             for idx, val in enumerate(results):
                 self.images[idx + 1] = val[idx + 1]
             # Generate the intensity histogram
