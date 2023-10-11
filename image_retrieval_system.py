@@ -21,7 +21,7 @@ if __name__ == "__main__":
     # Event Loop
     while True:
         # Monitoring events and user (generated/selected) values
-        event, values = window.read(timeout=1000)
+        event, values = window.read(timeout=100)
         event_parameters = event.split("_") if event else None
 
         # Window close button Event

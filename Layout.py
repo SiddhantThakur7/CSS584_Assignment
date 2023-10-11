@@ -140,7 +140,7 @@ class Layout:
                 ],
                 [
                     psg.Combo(
-                        ["Intensity", "Color", "Energy"],
+                        ["Intensity", "Color"],
                         default_value=self.similarity_method,
                         pad=(8, 36),
                         expand_x=True,
