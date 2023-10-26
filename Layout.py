@@ -2,16 +2,18 @@ import PySimpleGUI as psg
 
 pagination_font = "Arial 16 bold"
 DEFAULT_SIMILARITY_METHOD = "Intensity"
+RELEVANCE_COMPATIBLE_METHOD = "Color + Intensity"
 
 
 class Layout:
     def __init__(self, images) -> None:
-        self.curr_page = 1 # State variable for current page number
-        self.selected_image = None # State variable for currently selected image 
-        self.similarity_method = DEFAULT_SIMILARITY_METHOD # State variable for currently selected similarity method
-        self.images = images # State variables for current image order list
+        self.curr_page = 1  # State variable for current page number
+        self.selected_image = None  # State variable for currently selected image
+        self.similarity_method = DEFAULT_SIMILARITY_METHOD  # State variable for currently selected similarity method
+        self.images = images  # State variables for current image order list
         self.MAX = len(images)
-
+        self.relevant_images = []
+        self.relevance_enabled = False
 
     def generate_image_gallery(self, size=(152, 152), page_length=18, cols=6):
         """Generates and combines the individual components of the image gallery section
@@ -63,7 +65,9 @@ class Layout:
                                     "{path}".format(path=self.images[cur]["path"]),
                                     pad=(16, 4 / 2),
                                     size=size,
-                                    key="-IMAGE_{id}-".format(id=self.images[cur]["name"]),
+                                    key="-IMAGE_{id}-".format(
+                                        id=self.images[cur]["name"]
+                                    ),
                                     enable_events=True,
                                 )
                             ],
@@ -73,7 +77,17 @@ class Layout:
                                     expand_x=True,
                                     justification="center",
                                 ),
-                                psg.Checkbox(text="", visible=True)
+                                psg.Checkbox(
+                                    text="",
+                                    default=(
+                                        self.images[cur]["name"] in self.relevant_images
+                                    ),
+                                    visible=self.relevance_enabled,
+                                    key="-FEEDBACK_{id}-".format(
+                                        id=self.images[cur]["name"]
+                                    ),
+                                    enable_events=True,
+                                ),
                             ],
                         ]
                     )
@@ -122,7 +136,7 @@ class Layout:
             ),
         ]
 
-        #Layout formation when an image is selected
+        # Layout formation when an image is selected
         if self.selected_image:
             image_operations_layout = [
                 [
@@ -154,6 +168,15 @@ class Layout:
                     psg.Column(
                         [
                             [
+                                psg.Checkbox(
+                                    "Relevance",
+                                    default= self.relevance_enabled,
+                                    disabled=(self.similarity_method != RELEVANCE_COMPATIBLE_METHOD),
+                                    key="-RF-",
+                                    enable_events=True,
+                                )
+                            ],
+                            [
                                 psg.Button(
                                     "Retrieve Images",
                                     key="-RETRIEVE-",
@@ -176,7 +199,7 @@ class Layout:
                 ],
             ]
 
-            frame_label = 'Other' if not result else 'Similar'
+            frame_label = "Other" if not result else "Similar"
             layout = [
                 [
                     [
@@ -193,7 +216,7 @@ class Layout:
                                         f"{frame_label} Images",
                                         [
                                             self.generate_image_gallery(
-                                                (120, 120), 20, 5
+                                                (108, 108), 20, 5
                                             )
                                         ],
                                         expand_y=True,
@@ -206,9 +229,9 @@ class Layout:
                     ]
                 ]
             ]
-        
+
         else:
-            #Layout formation when no image is selected
+            # Layout formation when no image is selected
             layout = [
                 [
                     psg.Column(
@@ -222,3 +245,17 @@ class Layout:
         return psg.Window(
             "Image Retrieval System", layout, size=(1280, 786), margins=(16, 16)
         )
+
+    def set_relevant_images(self, dictionary):
+        for key in dictionary:
+            key_parameter = key.split("_")
+            if "-FEEDBACK" in key_parameter:
+                if dictionary[key]:
+                    self.relevant_images.append(key_parameter[1][:-1])
+
+    def to_toggle_Relevance(self, value):
+        if (
+            value == RELEVANCE_COMPATIBLE_METHOD
+            or self.similarity_method == RELEVANCE_COMPATIBLE_METHOD
+        ):
+            return True

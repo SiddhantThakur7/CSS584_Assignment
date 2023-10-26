@@ -278,9 +278,28 @@ class ImageProcessor:
     def get_zero_sd_normalization(self, sd):
         s = sorted(sd)
         i = 0
-        while s[i] == 0:
+        while s[i] == 0 and i < len(s):
             i += 1
         return s[i] / 2
+    
+    def update_feature_weights(self, chosen_image, relevant_images):
+        histograms = [self.images[chosen_image]['combined_histogram']]
+        for image in relevant_images:
+            histograms.append(self.images[image]['combined_histogram'])
+        histograms = np.array(histograms)
+        avg = np.mean(histograms, axis=0)
+        sd = np.std(histograms, axis=0)
+        sd_sum = np.sum(sd)
+        for i in range(len(sd)):
+            if sd[i] == 0:
+                if avg[i] == 0:
+                    self.weights[i] = 0
+                    continue
+                else:
+                    sd[i] = self.get_zero_sd_normalization(sd)
+                self.weights[i] = (1 / sd[i]) / sd_sum
+        return    
+
 
     def caclulate_distance(self, image1, image2, type="intensity"):
         """Calculates manhattan distance between two image histograms.
@@ -324,7 +343,7 @@ class ImageProcessor:
                 image_distances.append(distance_info)
         return image_distances
 
-    def retrieve_similar_images(self, chosen_image, method_label):
+    def retrieve_similar_images(self, chosen_image, method_label, relevant_images = []):
         """Sorts the image distance pairs between a selected image and all other images.
 
         Args:
@@ -335,6 +354,9 @@ class ImageProcessor:
             list: image list sorted on lowest to highest distance. 
         """
         method = METHOD_MAP[method_label]
+        if method == COMBINED:
+            self.update_feature_weights(chosen_image, relevant_images)
+        
         distances = self.process_image_distances(chosen_image, method)
         distances.sort(key=lambda x: x["distance"])
         return distances

@@ -36,6 +36,17 @@ if __name__ == "__main__":
             current_layout.curr_page = 1
             current_layout.selected_image = event_parameters[1][:-1]
             window, window_prev = current_layout.createWindow(), window
+        
+        if event == '-METHOD-':
+            if(current_layout.to_toggle_Relevance(values[event])):
+                current_layout.similarity_method = values[event]
+                window, window_prev = current_layout.createWindow(), window
+        
+        if event == '-RF-':
+            current_layout.relevance_enabled = values[event]
+            if not current_layout.relevance_enabled:
+                current_layout.relevant_images = []
+            window, window_prev = current_layout.createWindow(), window
 
         # State reset to default event
         if event == "-RESET-":
@@ -47,10 +58,11 @@ if __name__ == "__main__":
         # Retrieve similar images event
         if event == "-RETRIEVE-":
             current_layout.similarity_method = values["-METHOD-"]
-            print(current_layout.similarity_method)
+            current_layout.set_relevant_images(values)
             current_layout.images = image_processor.retrieve_similar_images(
                 current_layout.selected_image,
                 current_layout.similarity_method,
+                current_layout.relevant_images
             )
             current_layout.curr_page = 1
             window, window_prev = current_layout.createWindow(result=True), window
