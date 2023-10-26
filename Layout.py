@@ -72,7 +72,8 @@ class Layout:
                                     "{name}".format(name=self.images[cur]["name"]),
                                     expand_x=True,
                                     justification="center",
-                                )
+                                ),
+                                psg.Checkbox(text="", visible=True)
                             ],
                         ]
                     )
