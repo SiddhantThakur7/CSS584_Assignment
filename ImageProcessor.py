@@ -33,10 +33,11 @@ def int_of(x):
     return int(x, 2)
 
 
+CACHE_PATH = ".\\cache\\representations.json"
 COLOR_CODE = "color_code"
 INTENSITY = "intensity"
-CACHE_PATH = ".\\cache\\representations.json"
-METHOD_MAP = {"Color": COLOR_CODE, "Intensity": INTENSITY}
+COMBINED = "combined"
+METHOD_MAP = {"Color": COLOR_CODE, "Intensity": INTENSITY, "Color + Intensity": COMBINED}
 
 
 class ImageProcessor:
@@ -50,6 +51,8 @@ class ImageProcessor:
         # Default image order
         self.default_image_list = []
 
+        self.weights = []
+
         self.initialize()
 
     def initialize(self):
@@ -57,14 +60,15 @@ class ImageProcessor:
         cache_data = self.load_cache_data()
         if cache_data:
             self.images = cache_data
+            self.weights = np.repeat(1/89, 89)
         else:
             # Process pool spanning across all the available CPU cores 
-            # with mp.Pool(processes=N) as p:
+            with mp.Pool(processes=N) as p:
                 # Aggregate mutlti-processing results
-                # results = p.map(self.intialize_image_data, [x for x in range(1, 101)])
-            results = []
-            for i in range(1, 101):
-                results.append(self.intialize_image_data(i))
+                results = p.map(self.intialize_image_data, [x for x in range(1, 101)])
+            # results = []
+            # for i in range(1, 101):
+            #     results.append(self.intialize_image_data(i))
             for idx, val in enumerate(results):
                 self.images[idx + 1] = val[idx + 1]
             # Generate the intensity histogram
@@ -73,6 +77,8 @@ class ImageProcessor:
             self.process_histograms("color_code")
             # Generate combined histogram
             self.combine_histograms()
+            # Normalize combined histogram features
+            self.normalize_histograms()
             # Write the generated data to cache
             self.write_to_cache(self.images)
 
@@ -238,7 +244,43 @@ class ImageProcessor:
     def combine_histograms(self):
         """Combines and saves histograms in-memory for all images. """
         for image in self.images:
-            self.images[image]["combined_histogram"] = np.concatenate((self.images[image]["intensity_histogram"], self.images[image]["color_code_histogram"]))
+            self.images[image]["combined_histogram"] = np.concatenate((self.images[image]["intensity_histogram"], self.images[image]["color_code_histogram"])) / self.images[image]["resolution"]
+        
+        num_of_features = len(self.images[1]['combined_histogram'])
+        self.weights = np.repeat(1/num_of_features, num_of_features)
+
+    def normalize_histograms(self):
+        """Normalizes and saves histograms in-memory for all images. """
+        histograms = []
+        for image in self.images:
+            histograms.append(self.images[image]["combined_histogram"])
+        histograms = np.array(histograms)
+        avg = np.mean(histograms, axis=0)
+        sd = np.std(histograms, axis=0)
+
+
+        for i in range(len(histograms)):
+            for j in range(len(histograms[0])):
+                if avg[j] != 0:
+                    histograms[i][j] -= avg[j]
+                    if sd[j] > 0:                        
+                        histograms[i][j] /= sd[j]
+                    else:
+                        histograms[i][j] /= self.get_zero_sd_normalization(sd)
+                else:
+                    histograms[i][j] = 0
+
+        # histograms = np.divide((histograms - avg), sd) 
+
+        for i, histogram in enumerate(histograms):
+            self.images[i+1]["combined_histogram"] = histogram
+    
+    def get_zero_sd_normalization(self, sd):
+        s = sorted(sd)
+        i = 0
+        while s[i] == 0:
+            i += 1
+        return s[i] / 2
 
     def caclulate_distance(self, image1, image2, type="intensity"):
         """Calculates manhattan distance between two image histograms.
@@ -251,6 +293,10 @@ class ImageProcessor:
         Returns:
             Integer: manhattan distance betweeen the two images.
         """
+        if type == 'combined':
+            feature_distances = np.multiply(np.abs(image1[f"{type}_histogram"] - image2[f"{type}_histogram"]), self.weights)
+            return np.sum(feature_distances)    
+        
         im1 = image1[f"{type}_histogram"] / image1["resolution"]
         im2 = image2[f"{type}_histogram"] / image2["resolution"]
         return np.sum(np.abs(im1 - im2))
@@ -292,3 +338,7 @@ class ImageProcessor:
         distances = self.process_image_distances(chosen_image, method)
         distances.sort(key=lambda x: x["distance"])
         return distances
+
+# if __name__ == "__main__":
+#     # Instantiating the ImageProcessor module
+#     image_processor = ImageProcessor()

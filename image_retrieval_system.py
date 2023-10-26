@@ -47,6 +47,7 @@ if __name__ == "__main__":
         # Retrieve similar images event
         if event == "-RETRIEVE-":
             current_layout.similarity_method = values["-METHOD-"]
+            print(current_layout.similarity_method)
             current_layout.images = image_processor.retrieve_similar_images(
                 current_layout.selected_image,
                 current_layout.similarity_method,
