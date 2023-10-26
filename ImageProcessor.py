@@ -71,8 +71,11 @@ class ImageProcessor:
             self.process_histograms("intensity")
             # Generate the Color Code histogram
             self.process_histograms("color_code")
+            # Generate combined histogram
+            self.combine_histograms()
             # Write the generated data to cache
             self.write_to_cache(self.images)
+
 
         # Initialize default image order
         self.default_image_list = list(self.images.values())
@@ -150,6 +153,10 @@ class ImageProcessor:
             data[image]["color_code_histogram"] = images[image][
                 "color_code_histogram"
             ].tolist()
+            data[image]["combined_histogram"] = images[image][
+                "combined_histogram"
+            ].tolist()
+            
         return data
 
     def deserialize_image_data(self, images):
@@ -168,6 +175,9 @@ class ImageProcessor:
             )
             data[image]["color_code_histogram"] = np.array(
                 images[image]["color_code_histogram"]
+            )
+            data[image]["combined_histogram"] = np.array(
+                images[image]["combined_histogram"]
             )
         return data
 
@@ -224,6 +234,11 @@ class ImageProcessor:
             self.images[image][f"{type}_histogram"] = self.compute_histogram(
                 self.images[image][f"{type}_representation"], type
             )
+
+    def combine_histograms(self):
+        """Combines and saves histograms in-memory for all images. """
+        for image in self.images:
+            self.images[image]["combined_histogram"] = np.concatenate((self.images[image]["intensity_histogram"], self.images[image]["color_code_histogram"]))
 
     def caclulate_distance(self, image1, image2, type="intensity"):
         """Calculates manhattan distance between two image histograms.
