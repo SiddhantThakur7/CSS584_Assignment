@@ -81,6 +81,7 @@ class Layout:
                                 ),
                                 psg.Checkbox(
                                     text="",
+                                    text_color='blue',
                                     default=(
                                         self.images[cur]["name"] in self.relevant_images
                                     ),
