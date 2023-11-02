@@ -289,15 +289,17 @@ class ImageProcessor:
         histograms = np.array(histograms)
         avg = np.mean(histograms, axis=0)
         sd = np.std(histograms, axis=0)
-        sd_sum = np.sum(sd)
+        sd = [sd[i] if sd[i] > 0 else self.get_zero_sd_normalization(sd) for i in range(len(sd))]
+        updated_weights = np.divide(1, sd)
+        sd_sum = np.sum(updated_weights)
         for i in range(len(sd)):
             if sd[i] == 0:
                 if avg[i] == 0:
                     self.weights[i] = 0
                     continue
-                else:
-                    sd[i] = self.get_zero_sd_normalization(sd)
-                self.weights[i] = (1 / sd[i]) / sd_sum
+                # else:
+                #     sd[i] = self.get_zero_sd_normalization(sd)
+            self.weights[i] = (1 / sd[i]) / sd_sum
         return    
 
 
@@ -354,7 +356,7 @@ class ImageProcessor:
             list: image list sorted on lowest to highest distance. 
         """
         method = METHOD_MAP[method_label]
-        if method == COMBINED:
+        if method == COMBINED and relevant_images:
             self.update_feature_weights(chosen_image, relevant_images)
         
         distances = self.process_image_distances(chosen_image, method)
