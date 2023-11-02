@@ -52,6 +52,8 @@ if __name__ == "__main__":
         if event == "-RESET-":
             current_layout.curr_page = 1
             current_layout.selected_image = None
+            current_layout.relevance_enabled = False
+            current_layout.relevant_images = []
             current_layout.images = image_processor.default_image_list
             window, window_prev = current_layout.createWindow(), window
 
