@@ -56,6 +56,7 @@ class Layout:
         image_gallery_layout = []
         while cur < min(start + page_length, cur_max):
             temp = []
+            subsample = 2 if size[0] == 152 else 3
             for _ in range(cols):
                 temp.append(
                     psg.Column(
@@ -65,6 +66,7 @@ class Layout:
                                     "{path}".format(path=self.images[cur]["path"]),
                                     pad=(16, 4 / 2),
                                     size=size,
+                                    subsample = subsample,
                                     key="-IMAGE_{id}-".format(
                                         id=self.images[cur]["name"]
                                     ),
@@ -140,9 +142,17 @@ class Layout:
         if self.selected_image:
             image_operations_layout = [
                 [
-                    psg.Image(
-                        ".\\images\\png\\{id}.png".format(id=self.selected_image),
-                        size=(300, 240),
+                    psg.Frame(
+                        title="",
+                        layout=[
+                            [
+                                psg.Image(
+                                    ".\\images\\png\\{id}.png".format(
+                                        id=self.selected_image
+                                    ),
+                                )
+                            ]
+                        ],
                         pad=(0, 36 / 4),
                     )
                 ],
@@ -170,8 +180,11 @@ class Layout:
                             [
                                 psg.Checkbox(
                                     "Relevance",
-                                    default= self.relevance_enabled,
-                                    disabled=(self.similarity_method != RELEVANCE_COMPATIBLE_METHOD),
+                                    default=self.relevance_enabled,
+                                    disabled=(
+                                        self.similarity_method
+                                        != RELEVANCE_COMPATIBLE_METHOD
+                                    ),
                                     key="-RF-",
                                     enable_events=True,
                                 )
@@ -208,7 +221,6 @@ class Layout:
                                 [
                                     psg.Column(
                                         image_operations_layout,
-                                        size=(296, 1200),
                                         element_justification="center",
                                         pad=(16, 16),
                                     ),
