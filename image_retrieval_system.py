@@ -54,6 +54,7 @@ if __name__ == "__main__":
             current_layout.selected_image = None
             current_layout.relevance_enabled = False
             current_layout.relevant_images = []
+            image_processor.resetWeights()
             current_layout.images = image_processor.default_image_list
             window, window_prev = current_layout.createWindow(), window
 

@@ -38,7 +38,7 @@ COLOR_CODE = "color_code"
 INTENSITY = "intensity"
 COMBINED = "combined"
 METHOD_MAP = {"Color": COLOR_CODE, "Intensity": INTENSITY, "Color + Intensity": COMBINED}
-
+DEFAULT_WEIGHT = 1/89
 
 class ImageProcessor:
     def __init__(self) -> None:
@@ -281,6 +281,12 @@ class ImageProcessor:
         return s[i] / 2
     
     def update_feature_weights(self, chosen_image, relevant_images):
+        """updates the feature weights according to the selected relevant images
+
+        Args:
+            chosen_image (list[list]): Image chosen
+            relevant_images (list[list]): Images selected as relevant
+        """
         histograms = [self.images[chosen_image]['combined_histogram']]
         for image in relevant_images:
             histograms.append(self.images[image]['combined_histogram'])
@@ -359,7 +365,8 @@ class ImageProcessor:
         distances = self.process_image_distances(chosen_image, method)
         distances.sort(key=lambda x: x["distance"])
         return distances
-
-# if __name__ == "__main__":
-#     # Instantiating the ImageProcessor module
-#     image_processor = ImageProcessor()
+    
+    def resetWeights(self):
+        """resets the weights to their intital values"""
+        for i in range(len(self.weights)):
+            self.weights[i] = DEFAULT_WEIGHT
