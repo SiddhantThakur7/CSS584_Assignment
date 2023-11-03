@@ -268,9 +268,7 @@ class ImageProcessor:
                     else:
                         histograms[i][j] /= self.get_zero_sd_normalization(sd)
                 else:
-                    histograms[i][j] = 0
-
-        # histograms = np.divide((histograms - avg), sd) 
+                    histograms[i][j] = histograms[i][j]
 
         for i, histogram in enumerate(histograms):
             self.images[i+1]["combined_histogram"] = histogram
@@ -288,8 +286,9 @@ class ImageProcessor:
             histograms.append(self.images[image]['combined_histogram'])
         histograms = np.array(histograms)
         avg = np.mean(histograms, axis=0)
-        sd = np.std(histograms, axis=0)
+        sd = np.std(histograms, axis=0, ddof=1)
         sd = [sd[i] if sd[i] > 0 else self.get_zero_sd_normalization(sd) for i in range(len(sd))]
+
         updated_weights = np.divide(1, sd)
         sd_sum = np.sum(updated_weights)
         for i in range(len(sd)):
@@ -297,9 +296,7 @@ class ImageProcessor:
                 if avg[i] == 0:
                     self.weights[i] = 0
                     continue
-                # else:
-                #     sd[i] = self.get_zero_sd_normalization(sd)
-            self.weights[i] = (1 / sd[i]) / sd_sum
+            self.weights[i] = updated_weights[i] / sd_sum
         return    
 
 
@@ -315,7 +312,7 @@ class ImageProcessor:
             Integer: manhattan distance betweeen the two images.
         """
         if type == 'combined':
-            feature_distances = np.multiply(np.abs(image1[f"{type}_histogram"] - image2[f"{type}_histogram"]), self.weights)
+            feature_distances = np.multiply(self.weights, np.abs(image1[f"{type}_histogram"] - image2[f"{type}_histogram"]))
             return np.sum(feature_distances)    
         
         im1 = image1[f"{type}_histogram"] / image1["resolution"]
